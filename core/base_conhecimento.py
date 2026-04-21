@@ -1,5 +1,33 @@
-# SLA é o tempo de espera em minutos para o atendimento do paciente com base no 
-# nivel de gravidade no caso do mesmo, utilizando o Protocolo de Mancheste. 
+"""Base declarativa de conhecimento do sistema de triagem.
+
+Este módulo concentra os dados que alimentam o motor de inferência. A ideia é
+que nenhuma regra clínica, nenhuma restrição de vulnerabilidade e nenhuma
+constante de tempo fique escondida dentro do motor como lógica ad hoc.
+
+O arquivo é organizado em quatro blocos principais:
+
+`SLA`
+    Define o tempo máximo de espera aceitável por nível de urgência.
+
+`REGRAS_PRIMARIAS`
+    Lista de regras que avaliam os sinais vitais brutos e retornam o nível
+    clínico inicial do paciente.
+
+`REGRA_VULNERAVEL`
+    Regra de ajuste de prioridade para grupos protegidos, elevando um nível a
+    urgência quando o paciente se enquadra em critérios de vulnerabilidade.
+
+`REGRAS_SEGUNDA_ORDEM`
+    Regras derivadas que observam conclusões anteriores do próprio motor, como
+    piora progressiva, violação de SLA e necessidade de escalonamento.
+
+`SINAIS_MONITORADOS`
+    Lista dos campos de leitura usados na comparação entre observações
+    consecutivas.
+"""
+
+# SLA é o tempo de espera em minutos para o atendimento do paciente com base no
+# nível de gravidade no caso do mesmo, utilizando o Protocolo de Manchester.
 SLA = {
     1: 0,   # Emergecia (Vermelho)
     2: 10,  # Muito Urgente (Laranja)
@@ -164,8 +192,8 @@ REGRAS_PRIMARIAS = [
 ]
 
 
-# Resolução SUS 2017
-# Eleva 1 nivel de prioridade; nunca rebaixa (nivel minimo = 1).
+# Regra inspirada na Resolução SUS 2017.
+# Eleva 1 nível de prioridade; nunca rebaixa (nível mínimo = 1).
 REGRA_VULNERAVEL = {
     'nome': 'grupo_vulneravel',
     'descricao': 'Paciente vulneravel e elevado 1 nivel acima do indicado clinicamente.',
@@ -179,7 +207,9 @@ REGRA_VULNERAVEL = {
 }
 
 
-# Regras de segunda ordem — disparam a partir de conclusões de outras regras, não de fatos brutos.
+# Regras de segunda ordem: dependem de conclusões internas do motor, e não dos
+# sinais vitais brutos. Isso permite encadeamento progressivo entre avaliações
+# clínicas, vulnerabilidade, piora e SLA.
 REGRAS_SEGUNDA_ORDEM = [
     {
         'id': 'E1',
@@ -227,3 +257,5 @@ REGRAS_SEGUNDA_ORDEM = [
         'acoes': ['bloquear_novas_admissoes', 'acionar_protocolo_sobrecarga'],
     },
 ]
+
+SINAIS_MONITORADOS = ['spo2', 'glasgow', 'frequencia_cardiaca', 'temperatura', 'escala_dor']
