@@ -18,8 +18,8 @@ usando a base declarativa definida em `core.base_conhecimento`.
 """
 
 from pprint import pprint
-from datetime import datetime
 
+from core.utils import hora_para_datetime
 from core.base_conhecimento import (
     SLA,
     REGRA_VULNERAVEL,
@@ -145,7 +145,7 @@ class Motor:
 
             try:
                 minutos_no_nivel_anterior = (
-                    self._hora_para_datetime(hora) - self._hora_para_datetime(hora_do_nivel_atual)
+                    hora_para_datetime(hora) - hora_para_datetime(hora_do_nivel_atual)
                 ).total_seconds() / 60
             except ValueError:
                 minutos_no_nivel_anterior = 0
@@ -260,17 +260,6 @@ class Motor:
         return quantidade_piorada, variacao_temperatura
 
 
-    def _hora_para_datetime(self, hora_str):
-        """Converte uma string `HH:MM` em `datetime` para cálculos temporais.
-
-        O projeto trabalha apenas com hora e minuto, então a data é inferida pelo
-        parser padrão de `datetime.strptime`. O método é pequeno, mas central para
-        manter o cálculo de SLA e tempo no nível atual legível e concentrado em um
-        único ponto.
-        """
-        return datetime.strptime(hora_str, '%H:%M')
-
-
     def _paciente_excedeu_sla(self, hora_entrada_nivel, hora_leitura, nivel):
         """Verifica se o tempo de espera ultrapassa o SLA do nível informado.
 
@@ -285,7 +274,7 @@ class Motor:
             return False  # Nivel 1 e atendimento imediato, SLA nao se aplica.
 
         try:
-            tempo_esperando = self._hora_para_datetime(hora_leitura) - self._hora_para_datetime(hora_entrada_nivel)
+            tempo_esperando = hora_para_datetime(hora_leitura) - hora_para_datetime(hora_entrada_nivel)
             minutos_esperando = tempo_esperando.total_seconds() / 60
             return minutos_esperando > limite_em_minutos
         except ValueError:
