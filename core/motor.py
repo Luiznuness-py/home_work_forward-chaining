@@ -17,8 +17,6 @@ O foco do módulo é manter a lógica de negócio auditável e determinística,
 usando a base declarativa definida em `core.base_conhecimento`.
 """
 
-from pprint import pprint
-
 from core.utils import hora_para_datetime
 from core.base_conhecimento import (
     SLA,
@@ -82,8 +80,6 @@ class Motor:
 
         paciente['log'] = log
         self.memory[paciente['id']] = paciente
-
-        pprint(paciente)
 
         return nivel_final
 
